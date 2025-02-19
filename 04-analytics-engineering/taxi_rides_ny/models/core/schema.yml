@@ -127,3 +127,28 @@ models:
       - name: payment_type_description
         data_type: string
         description: ""
+
+  - name: fct_taxi_trips_quarterly_revenue
+    description: >
+      This model aggregates quarterly taxi trip revenues by extracting the year, quarter, 
+      and month from the pickup_datetime field. It computes the total revenue per quarter 
+      and calculates the Year-over-Year (YoY) revenue growth for each quarter.
+    columns:
+      - name: year
+        description: "The year in which the taxi trips occurred."
+        tests:
+          - not_null
+      - name: quarter
+        description: "The quarter (1, 2, 3, or 4) in which the taxi trips occurred."
+        tests:
+          - not_null
+      - name: quarterly_revenue
+        description: "The aggregated total revenue for all taxi trips in the quarter."
+        tests:
+          - not_null
+      - name: previous_year_revenue
+        description: "The quarterly revenue for the same quarter in the previous year."
+      - name: yoy_growth
+        description: "The change in quarterly revenue compared to the same quarter in the previous year."
+      - name: year_quarter
+        description: "A derived dimension that concatenates the year and quarter (e.g., '2024/Q1')."
