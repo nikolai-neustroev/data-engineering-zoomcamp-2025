@@ -37,10 +37,9 @@ quarterly_yoy AS (
                     PARTITION BY service_type, quarter 
                     ORDER BY year
                  ) IS NULL THEN NULL
-            ELSE (quarterly_revenue - LAG(quarterly_revenue) OVER (
-                      PARTITION BY service_type, quarter ORDER BY year
-                  )) / LAG(quarterly_revenue) OVER (
-                      PARTITION BY service_type, quarter ORDER BY year
+            ELSE SAFE_DIVIDE(
+                    (quarterly_revenue - LAG(quarterly_revenue) OVER (PARTITION BY service_type, quarter ORDER BY year)), 
+                    LAG(quarterly_revenue) OVER (PARTITION BY service_type, quarter ORDER BY year)
                   )
         END AS yoy_growth
     FROM quarterly
