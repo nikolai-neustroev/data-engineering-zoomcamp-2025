@@ -5,7 +5,7 @@ WITH base AS (
         EXTRACT(YEAR FROM pickup_datetime) AS year,
         EXTRACT(QUARTER FROM pickup_datetime) AS quarter,
         EXTRACT(MONTH FROM pickup_datetime) AS month
-    FROM {{ ref('fct_taxi_trips') }}
+    FROM {{ ref('fact_trips') }}
 ),
 
 quarterly AS (
