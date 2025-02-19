@@ -17,8 +17,8 @@ SELECT
     service_type, 
     year, 
     month,
-    PERCENTILE_CONT(fare_amount, 0.9) OVER(PARTITION BY service_type, year, month) AS percentile90,
-    PERCENTILE_CONT(fare_amount, 0.95) OVER(PARTITION BY service_type, year, month) AS percentile95,
-    PERCENTILE_CONT(fare_amount, 0.97) OVER(PARTITION BY service_type, year, month) AS percentile97,
+    APPROX_QUANTILES(fare_amount, 100)[OFFSET(90)] AS percentile90,
+    APPROX_QUANTILES(fare_amount, 100)[OFFSET(95)] AS percentile95,
+    APPROX_QUANTILES(fare_amount, 100)[OFFSET(97)] AS percentile97
 FROM
     base
