@@ -1,7 +1,6 @@
 {{
     config(
-        materialized='table',
-        location='US'
+        materialized='table'
     )
 }}
 

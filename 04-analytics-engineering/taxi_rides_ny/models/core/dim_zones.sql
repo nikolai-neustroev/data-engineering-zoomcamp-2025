@@ -1,4 +1,7 @@
-{{ config(materialized='table') }}
+{{ config(
+    materialized='table',
+    location='US'
+    ) }}
 
 select 
     locationid, 
