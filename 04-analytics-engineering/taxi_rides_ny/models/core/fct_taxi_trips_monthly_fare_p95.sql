@@ -22,3 +22,7 @@ SELECT
     APPROX_QUANTILES(fare_amount, 100)[OFFSET(97)] AS percentile97
 FROM
     base
+GROUP BY
+    service_type, 
+    year, 
+    month
