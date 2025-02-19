@@ -152,3 +152,22 @@ models:
         description: "The change in quarterly revenue compared to the same quarter in the previous year."
       - name: year_quarter
         description: "A derived dimension that concatenates the year and quarter (e.g., '2024/Q1')."
+
+  - name: fct_taxi_trips_monthly_fare_p95
+    description: >
+      This model aggregates monthly taxi trip fares by extracting the year
+      and month from the pickup_datetime field. It computes the percentile values of fares
+      for each month.
+    columns:
+      - name: service_type
+        description: "Service type (green, yellow)"
+      - name: year
+        description: ""
+      - name: month
+        description: ""
+      - name: percentile90
+        description: "Percentile value of fare_amount 90%"
+      - name: percentile95
+        description: "Percentile value of fare_amount 95%"
+      - name: percentile97
+        description: "Percentile value of fare_amount 97%"

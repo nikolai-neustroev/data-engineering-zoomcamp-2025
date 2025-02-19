@@ -31,4 +31,18 @@ A:
 
 ## Q5
 
-Q: 
+Q: Considering the YoY Growth in 2020, which were the yearly quarters with the best (or less worse) and worst results for green, and yellow
+
+A: green: {best: 2020/Q1, worst: 2020/Q2}, yellow: {best: 2020/Q1, worst: 2020/Q2}
+
+```
+SELECT
+  *
+FROM
+  `de-zoomcamp-2025.dbt_dataset.fct_taxi_trips_quarterly_revenue`
+WHERE
+  year = 2020
+```
+
+## Q6
+
