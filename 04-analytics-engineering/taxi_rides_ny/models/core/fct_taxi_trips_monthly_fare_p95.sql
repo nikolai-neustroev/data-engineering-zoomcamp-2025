@@ -17,9 +17,9 @@ SELECT
     service_type, 
     year, 
     month,
-    APPROX_QUANTILES(fare_amount, 100)[OFFSET(90)] AS percentile90,
-    APPROX_QUANTILES(fare_amount, 100)[OFFSET(95)] AS percentile95,
-    APPROX_QUANTILES(fare_amount, 100)[OFFSET(97)] AS percentile97
+    APPROX_QUANTILES(fare_amount, 100 RESPECT NULLS)[OFFSET(90)] AS percentile90,
+    APPROX_QUANTILES(fare_amount, 100 RESPECT NULLS)[OFFSET(95)] AS percentile95,
+    APPROX_QUANTILES(fare_amount, 100 RESPECT NULLS)[OFFSET(97)] AS percentile97
 FROM
     base
 GROUP BY
