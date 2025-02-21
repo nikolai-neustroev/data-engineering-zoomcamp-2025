@@ -10,7 +10,7 @@ WITH base AS (
     WHERE
         fare_amount > 0
         AND trip_distance > 0 
-        AND payment_type_description in ('Cash', 'Credit Card')
+        AND payment_type_description in ('Cash', 'Credit card')
 ),
 
 base_with_percentiles AS (
