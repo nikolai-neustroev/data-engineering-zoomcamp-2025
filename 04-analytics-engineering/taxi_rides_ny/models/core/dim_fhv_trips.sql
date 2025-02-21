@@ -7,6 +7,7 @@ WITH fhv_trips AS (
 dim_zones AS (
     SELECT *
     FROM {{ ref('dim_zones') }}
+    WHERE borough != 'Unknown'
 )
 SELECT
     fhv_trips.dispatching_base_num,
