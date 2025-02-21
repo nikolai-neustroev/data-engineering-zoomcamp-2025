@@ -9,7 +9,7 @@ dim_zones AS (
     FROM {{ ref('dim_zones') }}
 )
 SELECT
-    fhv_trips.tripid,
+    fhv_trips.dispatching_base_num,
     fhv_trips.pickup_datetime,
     fhv_trips.dropoff_datetime,
     fhv_trips.pickup_locationid,
@@ -20,7 +20,7 @@ SELECT
     EXTRACT(MONTH FROM fhv_trips.pickup_datetime) AS month
 FROM
     fhv_trips
-INNER JOIN dim_zones AS pickup_zone
+LEFT JOIN dim_zones AS pickup_zone
     ON fhv_trips.pickup_locationid = pickup_zone.locationid
-INNER JOIN dim_zones AS dropoff_zone
+LEFT JOIN dim_zones AS dropoff_zone
     ON fhv_trips.dropoff_locationid = dropoff_zone.locationid

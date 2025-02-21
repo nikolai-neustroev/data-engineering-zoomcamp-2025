@@ -6,10 +6,11 @@ WITH tripdata AS (
     WHERE dispatching_base_num IS NOT NULL
 )
 SELECT
-    tripid,
+    dispatching_base_num,
     pickup_datetime,
     dropoff_datetime,
-    pickup_locationid,
-    dropoff_locationid,
-    dispatching_base_num
+    PUlocationID AS pickup_locationid,
+    DOlocationID AS dropoff_locationid,
+    SR_Flag,
+    Affiliated_base_number
 FROM tripdata

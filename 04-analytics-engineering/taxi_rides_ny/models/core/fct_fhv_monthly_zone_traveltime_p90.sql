@@ -2,7 +2,7 @@
 
 WITH base AS (
     SELECT
-        tripid,
+        dispatching_base_num,
         pickup_datetime,
         dropoff_datetime,
         pickup_locationid,
