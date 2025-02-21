@@ -14,9 +14,9 @@ A: Update the WHERE clause to pickup_datetime >= CURRENT_DATE - INTERVAL '{{ var
 
 ## Q3
 
-Q: 
+Q: Select the option that does NOT apply for materializing fct_taxi_monthly_zone_revenue.
 
-A:
+A: dbt run --select +models/core/dim_taxi_trips.sql+ --target prod (won't materialize stg_green_tripdata and stg_yellow_tripdata)
 
 ## Q4
 
@@ -64,4 +64,26 @@ WHERE
 
 Q: For the Trips that respectively started from Newark Airport, SoHo, and Yorkville East, in November 2019, what are dropoff_zones with the 2nd longest p90 trip_duration ?
 
-A: 
+A: LaGuardia Airport, Chinatown, Garment District
+
+```
+WITH ranked_trips AS (
+    SELECT
+        pickup_zone,
+        dropoff_zone,
+        percentile90,
+        ROW_NUMBER() OVER (PARTITION BY pickup_zone ORDER BY percentile90 DESC) AS rn
+    FROM `de-zoomcamp-2025a.dbt_nneustroev.fct_fhv_monthly_zone_traveltime_p90`
+    WHERE
+        year = 2019
+        AND month = 11
+        AND pickup_zone IN ('Newark Airport', 'SoHo', 'Yorkville East')
+        AND dropoff_zone NOT IN ('NA', 'NV')
+)
+SELECT
+    pickup_zone,
+    dropoff_zone,
+    percentile90
+FROM ranked_trips
+WHERE rn = 2
+```
