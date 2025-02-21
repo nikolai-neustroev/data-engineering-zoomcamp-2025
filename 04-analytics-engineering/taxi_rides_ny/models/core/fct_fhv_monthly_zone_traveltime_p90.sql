@@ -28,14 +28,16 @@ pickup_zones AS (
     SELECT
         locationid AS pickup_locationid,
         zone AS pickup_zone
-    FROM {{ ref('taxi_zone_lookup') }}
+    FROM {{ ref('dim_zones') }}
+    WHERE borough != 'Unknown'
 ),
 
 dropoff_zones AS (
     SELECT
         locationid AS dropoff_locationid,
         zone AS dropoff_zone
-    FROM {{ ref('taxi_zone_lookup') }}
+    FROM {{ ref('dim_zones') }}
+    WHERE borough != 'Unknown'
 )
 
 SELECT DISTINCT
