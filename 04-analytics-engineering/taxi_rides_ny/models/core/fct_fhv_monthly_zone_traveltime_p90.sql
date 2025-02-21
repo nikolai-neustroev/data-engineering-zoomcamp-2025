@@ -22,12 +22,32 @@ base_with_percentiles AS (
         trip_duration,
         PERCENTILE_CONT(trip_duration, 0.90) OVER (PARTITION BY year, month, pickup_locationid, dropoff_locationid) AS percentile90
     FROM base
+),
+
+pickup_zones AS (
+    SELECT
+        locationid AS pickup_locationid,
+        zone AS pickup_zone
+    FROM {{ ref('taxi_zone_lookup') }}
+),
+
+dropoff_zones AS (
+    SELECT
+        locationid AS dropoff_locationid,
+        zone AS dropoff_zone
+    FROM {{ ref('taxi_zone_lookup') }}
 )
 
 SELECT DISTINCT
-    year,
-    month,
-    pickup_locationid,
-    dropoff_locationid,
-    percentile90
+    base_with_percentiles.year,
+    base_with_percentiles.month,
+    base_with_percentiles.pickup_locationid,
+    pickup_zones.pickup_zone,
+    base_with_percentiles.dropoff_locationid,
+    dropoff_zones.dropoff_zone,
+    base_with_percentiles.percentile90
 FROM base_with_percentiles
+LEFT JOIN pickup_zones
+    ON base_with_percentiles.pickup_locationid = pickup_zones.pickup_locationid
+LEFT JOIN dropoff_zones
+    ON base_with_percentiles.dropoff_locationid = dropoff_zones.dropoff_locationid
