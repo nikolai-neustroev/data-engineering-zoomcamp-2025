@@ -171,3 +171,43 @@ models:
         description: "Percentile value of fare_amount 95%"
       - name: percentile97
         description: "Percentile value of fare_amount 97%"
+  - name: dim_fhv_trips
+    description: >
+      List of For-Hire Vehicle (FHV) trips including details such as pickup and dropoff locations, 
+      datetime, and trip distance.
+    columns:
+      - name: tripid
+        data_type: string
+        description: "Unique identifier for each FHV trip."
+      - name: pickup_locationid
+        data_type: int64
+        description: "Location ID where the trip started."
+      - name: dropoff_locationid
+        data_type: int64
+        description: "Location ID where the trip ended."
+      - name: pickup_datetime
+        data_type: timestamp
+        description: "Datetime when the trip started."
+      - name: dropoff_datetime
+        data_type: timestamp
+        description: "Datetime when the trip ended."
+      - name: trip_distance
+        data_type: numeric
+        description: "Distance traveled during the trip."
+
+  - name: fct_fhv_monthly_zone_traveltime_p90
+    description: >
+      This model aggregates monthly For-Hire Vehicle (FHV) trip travel times by extracting the year
+      and month from the pickup_datetime field. It computes the 90th percentile of travel times
+      for each month and zone.
+    columns:
+      - name: year
+        description: "The year in which the FHV trips occurred."
+      - name: month
+        description: "The month in which the FHV trips occurred."
+      - name: pickup_zone
+        description: "The pickup zone for the FHV trips."
+      - name: dropoff_zone
+        description: "The dropoff zone for the FHV trips."
+      - name: travel_time_p90
+        description: "The 90th percentile of travel times for the FHV trips in the month."

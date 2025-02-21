@@ -60,3 +60,8 @@ WHERE
   AND month = 4
 ```
 
+## Q7
+
+Q: For the Trips that respectively started from Newark Airport, SoHo, and Yorkville East, in November 2019, what are dropoff_zones with the 2nd longest p90 trip_duration ?
+
+A: 
