@@ -26,8 +26,13 @@ def create_events_source_kafka(t_env):
     topic_name = "green-trips"
     source_ddl = f"""
         CREATE TABLE {table_name} (
-            test_data INTEGER,
+            lpep_pickup_datetime TIMESTAMP(3),
             lpep_dropoff_datetime TIMESTAMP(3),
+            PULocationID INT,
+            DOLocationID INT,
+            passenger_count INT,
+            trip_distance DOUBLE,
+            tip_amount DOUBLE,
             WATERMARK FOR lpep_dropoff_datetime AS lpep_dropoff_datetime - INTERVAL '5' SECOND
         ) WITH (
             'connector' = 'kafka',
@@ -61,10 +66,10 @@ def log_aggregation():
         INSERT INTO {aggregated_table}
         SELECT
             SESSION_START(lpep_dropoff_datetime, INTERVAL '5' MINUTES) as event_hour,
-            test_data,
+            PULocationID as test_data,
             COUNT(*) AS num_hits
         FROM {source_table}
-        GROUP BY SESSION(lpep_dropoff_datetime, INTERVAL '5' MINUTES), test_data;
+        GROUP BY SESSION(lpep_dropoff_datetime, INTERVAL '5' MINUTES), PULocationID;
         """).wait()
 
     except Exception as e:
