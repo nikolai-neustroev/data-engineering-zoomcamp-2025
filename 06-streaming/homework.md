@@ -58,8 +58,8 @@ How much time did it take to send the entire dataset and flush?
 
 Which pickup and drop off locations have the longest unbroken streak of taxi trips?
 
-`docker compose exec jobmanager ./bin/flink run -py /opt/src/job/session_job.py --pyFiles /opt/src -d`
-
 ## Answer:
 ```
+"pulocationid","dolocationid","longest_streak"
+7,264,10
 ```

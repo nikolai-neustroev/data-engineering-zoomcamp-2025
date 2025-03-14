@@ -1,79 +1,59 @@
-from pyflink.datastream import StreamExecutionEnvironment
-from pyflink.table import EnvironmentSettings, StreamTableEnvironment
+from pyflink.table import EnvironmentSettings, TableEnvironment
 
-def create_events_aggregated_sink(t_env):
-    table_name = 'processed_events_aggregated'
-    sink_ddl = f"""
-        CREATE TABLE {table_name} (
-            event_hour TIMESTAMP(3),
-            test_data INT,
-            num_hits BIGINT,
-            PRIMARY KEY (event_hour, test_data) NOT ENFORCED
-        ) WITH (
-            'connector' = 'jdbc',
-            'url' = 'jdbc:postgresql://postgres:5432/postgres',
-            'table-name' = '{table_name}',
-            'username' = 'postgres',
-            'password' = 'postgres',
-            'driver' = 'org.postgresql.Driver'
-        );
-        """
-    t_env.execute_sql(sink_ddl)
-    return table_name
+# Set up the streaming Table environment
+env_settings = EnvironmentSettings.new_instance().in_streaming_mode().build()
+t_env = TableEnvironment.create(env_settings)
 
-def create_events_source_kafka(t_env):
-    table_name = "processed_events"
-    topic_name = "green-trips"
-    source_ddl = f"""
-        CREATE TABLE {table_name} (
-            lpep_pickup_datetime TIMESTAMP(3),
-            lpep_dropoff_datetime TIMESTAMP(3),
-            PULocationID INT,
-            DOLocationID INT,
-            passenger_count INT,
-            trip_distance DOUBLE,
-            tip_amount DOUBLE,
-            WATERMARK FOR lpep_dropoff_datetime AS lpep_dropoff_datetime - INTERVAL '5' SECOND
-        ) WITH (
-            'connector' = 'kafka',
-            'properties.bootstrap.servers' = 'redpanda-1:29092',
-            'topic' = '{topic_name}',
-            'scan.startup.mode' = 'earliest-offset',
-            'properties.auto.offset.reset' = 'earliest',
-            'format' = 'json'
-        );
-        """
-    t_env.execute_sql(source_ddl)
-    return table_name
+# Define Kafka source table using JSON format
+t_env.execute_sql("""
+CREATE TABLE green_trips (
+    lpep_pickup_datetime TIMESTAMP(3),
+    lpep_dropoff_datetime TIMESTAMP(3),
+    PULocationID INT,
+    DOLocationID INT,
+    passenger_count INT,
+    trip_distance DOUBLE,
+    tip_amount DOUBLE,
+    WATERMARK FOR lpep_dropoff_datetime AS lpep_dropoff_datetime - INTERVAL '5' SECOND
+) WITH (
+    'connector' = 'kafka',
+    'topic' = 'green-trips',
+    'properties.bootstrap.servers' = 'redpanda-1:29092',
+    'properties.group.id' = 'green_trips_group',
+    'scan.startup.mode' = 'earliest-offset',
+    'format' = 'json'
+)
+""")
 
-def log_aggregation():
-    # Set up the execution environment
-    env = StreamExecutionEnvironment.get_execution_environment()
-    env.enable_checkpointing(10 * 1000)
-    env.set_parallelism(3)
+# Define a JDBC sink table
+t_env.execute_sql("""
+CREATE TABLE postgres_sink (
+    session_start TIMESTAMP(3),
+    session_end TIMESTAMP(3),
+    trip_count BIGINT,
+    total_distance DOUBLE,
+    total_tip DOUBLE
+) WITH (
+    'connector' = 'jdbc',
+    'url' = 'jdbc:postgresql://postgres:5432/postgres',
+    'table-name' = 'green_trips_session',
+    'username' = 'postgres',
+    'password' = 'postgres'
+)
+""")
 
-    # Set up the table environment
-    settings = EnvironmentSettings.new_instance().in_streaming_mode().build()
-    t_env = StreamTableEnvironment.create(env, environment_settings=settings)
+# Use a session window with a 5 minute gap on lpep_dropoff_datetime.
+agg_query = """
+INSERT INTO postgres_sink
+SELECT 
+    SESSION_START(lpep_dropoff_datetime, INTERVAL '5' MINUTE) AS session_start,
+    SESSION_END(lpep_dropoff_datetime, INTERVAL '5' MINUTE) AS session_end,
+    COUNT(*) AS trip_count,
+    SUM(trip_distance) AS total_distance,
+    SUM(tip_amount) AS total_tip
+FROM green_trips
+GROUP BY SESSION(lpep_dropoff_datetime, INTERVAL '5' MINUTE)
+"""
 
-    try:
-        # Create Kafka source table and JDBC sink table
-        source_table = create_events_source_kafka(t_env)
-        aggregated_table = create_events_aggregated_sink(t_env)
-
-        # Using session window grouping syntax instead of the table function:
-        t_env.execute_sql(f"""
-        INSERT INTO {aggregated_table}
-        SELECT
-            SESSION_START(lpep_dropoff_datetime, INTERVAL '5' MINUTES) as event_hour,
-            PULocationID as test_data,
-            COUNT(*) AS num_hits
-        FROM {source_table}
-        GROUP BY SESSION(lpep_dropoff_datetime, INTERVAL '5' MINUTES), PULocationID;
-        """).wait()
-
-    except Exception as e:
-        print("Writing records from Kafka to JDBC failed:", str(e))
-
-if __name__ == '__main__':
-    log_aggregation()
+# Execute the aggregation query
+t_env.execute_sql(agg_query)
